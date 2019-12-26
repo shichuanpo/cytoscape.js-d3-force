@@ -1,10 +1,10 @@
-cytoscape-cytoscape.js-d3-force
+cytoscape-d3-force
 ================================================================================
 
 
 ## Description
 
-d3-force for cytoscape.js ([demo](https://.github.io/cytoscape.js-d3-force))
+d3-force for cytoscape.js ([demo](https://shichuanpo.github.io/cytoscape.js-d3-force/demo.html))
 
 ## Dependencies
 
