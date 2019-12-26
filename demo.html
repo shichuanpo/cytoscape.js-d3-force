@@ -146,9 +146,19 @@ function createChildren(id, num) {
 					// demo your layout
 					layout: {
 						name: 'd3-force',
+            animate: true,
             linkId: function id(d) {
               return d.id;
-            }
+            },
+            linkDistance: 100,
+            manyBodyStrength: -600,
+            ready: function(){},
+            stop: function(){},
+            tick: function(progress) {
+              console.log('progress - ', progress);
+            },
+            randomize: true,
+            infinite: true
 						// some more options here...
 					},
 
@@ -169,7 +179,7 @@ function createChildren(id, num) {
 						}
 					],
 
-          elements: createData(2000),
+          elements: createData(500),
           wheelSensitivity: 0.5,
         });
 
