@@ -1,6 +1,6 @@
 {
   "name": "cytoscape-d3-force",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "d3-force for cytoscape.js",
   "main": "cytoscape-d3-force.js",
   "author": {
