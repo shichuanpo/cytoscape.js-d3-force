@@ -146,7 +146,9 @@ function createChildren(id, num) {
 					// demo your layout
 					layout: {
 						name: 'd3-force',
-
+            linkId: function id(d) {
+              return d.id;
+            }
 						// some more options here...
 					},
 

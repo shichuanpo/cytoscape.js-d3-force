@@ -144,10 +144,8 @@ class ContinuousLayout {
     }
     
     if (!l.simulation) {
-      let _forcenodes = s.nodes.map(n => assign(l.getScratch(n), {id: n.id()}));
-      let _forceedges = s.edges.map(e => {
-        return { id: e.id(), target: e.target().id(), source: e.source().id() };
-      });
+      let _forcenodes = s.nodes.map(n => assign(l.getScratch(n), n.data()));
+      let _forceedges = s.edges.map(e => assign({}, e.data()));
       l.simulation = d3.forceSimulation(_forcenodes);
       s.alpha && l.simulation.alpha(s.alpha);
       s.alphaMin && l.simulation.alphaMin(s.alphaMin);
