@@ -4,7 +4,7 @@ const impl = require('./layout');
 let register = function( cytoscape ){
   if( !cytoscape ){ return; } // can't register if cytoscape unspecified
 
-  cytoscape( 'layout', 'cytoscape.jsD3Force', impl ); // register with cytoscape.js
+  cytoscape( 'layout', 'd3-force', impl ); // register with cytoscape.js
 };
 
 if( typeof cytoscape !== 'undefined' ){ // expose to global cytoscape (i.e. window.cytoscape)

@@ -9,4 +9,4 @@
  * directed / physics simulation layout.
  */
 // module.exports = require('./discrete');
-// module.exports = require('./continuous');
+module.exports = require('./continuous');
