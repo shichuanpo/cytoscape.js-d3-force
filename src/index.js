@@ -1,4 +1,4 @@
-const impl = require('./layout');
+const impl = require('./d3-force');
 
 // registers the extension on a cytoscape lib ref
 let register = function( cytoscape ){

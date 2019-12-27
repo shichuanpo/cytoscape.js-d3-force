@@ -2,13 +2,13 @@
 * cytoscape-d3-force
 */
 
-const config = require('./config');
+const defaults = require('./defaults');
 const d3 = require('d3-force');
-const assign = require('../assign');
+const assign = require('./assign');
 
 class ContinuousLayout {
   constructor( options ){
-    let o = this.options = assign( {}, config, options );
+    let o = this.options = assign( {}, defaults, options );
     this.state = assign( {}, o, {
       layout: this,
       nodes: o.eles.nodes(),

@@ -24,6 +24,7 @@
 			body {
 				font-family: helvetica neue, helvetica, liberation sans, arial, sans-serif;
 				font-size: 14px;
+        position: relative;
 			}
 
 			#cy {
@@ -34,12 +35,51 @@
 				right: 0;
 				z-index: 999;
 			}
-
+      
 			h1 {
 				opacity: 0.5;
 				font-size: 1em;
 				font-weight: bold;
 			}
+      .cytoscape--container__loading{
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        z-index: 2000;
+        background: #fff;
+      }
+      .progress-bar{
+        top: 50%;
+        margin-top: -15px;
+        left: 20%;
+        width: 60%;
+        text-align: center;
+        position: absolute;
+        overflow: hidden;
+      }
+      .progress-bar__outer{
+        width: 100%;
+        border-radius: 100px;
+        margin: 16px 0;
+        height: 10px;
+        background-color: #ebeef5;
+        overflow: hidden;
+        position: relative;
+        vertical-align: middle;
+      }
+      .progress-bar__inner{
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        background-color: #409eff;
+        text-align: right;
+        border-radius: 100px;
+        line-height: 1;
+        white-space: nowrap;
+      }
 		</style>
 
 		<script>
@@ -152,29 +192,29 @@ function createChildren(id, num) {
 					// demo your layout
 					layout: {
 						name: 'd3-force',
-            animate: true,
+            animate: false,
+            fit: false,
             linkId: function id(d) {
               return d.id;
             },
-            linkDistance: 80,
-            manyBodyStrength: -300,
-            ready: function(){},
-            stop: function(){},
-            tick: function(progress) {
-              console.log('progress - ', progress);
+            linkDistance: 100,
+            manyBodyStrength: -600,
+            ready: function(){
+              document.getElementById('progress-box').style.display = 'block'
             },
-            randomize: true,
-            infinite: true
-						// some more options here...
+            stop: function(){
+              document.getElementById('progress-box').style.display = 'none'
+            },
+            tick: function(progress) {
+              let text = (progress * 100).toFixed(1) + '%'
+              document.getElementById('progress-text').innerHTML = `正在计算布局，请稍后 ${text}`
+              document.getElementById('progress-bar').style.width = text
+            },
+            randomize: false,
+            infinite: false
 					},
 
 					style: [
-						// {
-						// 	selector: 'node',
-						// 	style: {
-						// 		'content': 'data(name)'
-						// 	}
-						// },
 
 						{
 							selector: 'edge',
@@ -185,7 +225,7 @@ function createChildren(id, num) {
 						}
 					],
 
-          elements: createData(100),
+          elements: createData(5000),
           wheelSensitivity: 0.5,
         });
 
@@ -197,8 +237,15 @@ function createChildren(id, num) {
 	<body>
 		<h1>cytoscape-d3-force demo</h1>
 
-		<div id="cy"></div>
-
+    <div id="cy"></div>
+    <div class="cytoscape--container__loading" id="progress-box">
+      <div class="progress-bar">
+        <div class="progress-bar__outer">
+          <div class="progress-bar__inner" id="progress-bar"></div>
+        </div>
+        <div class="progress-bar__text" id="progress-text"></div>
+      </div>  
+    <div>
 	</body>
 
 </html>
