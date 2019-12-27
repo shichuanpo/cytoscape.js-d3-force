@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "description": "d3-force for cytoscape.js",
   "main": "cytoscape-d3-force.js",
-  "author": {
-    "name": "yangdf",
-    "email": "yangdongfeng8@126.com"
-  },
+  "author": "yangdf <yangdongfeng8@126.com>",
   "scripts": {
     "postpublish": "run-s gh-pages:demo gh-pages:deploy gh-pages:clean",
     "gh-pages:demo": "cpy demo.html . --rename=index.html",
@@ -23,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com//cytoscape.js-d3-force.git"
+    "url": "https://github.com/shichuanpo/cytoscape.js-d3-force.git"
   },
   "keywords": [
     "cytoscape",
@@ -31,9 +28,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com//cytoscape.js-d3-force/issues"
+    "url": "https://github.com/shichuanpo/cytoscape.js-d3-force/issues"
   },
-  "homepage": "https://github.com//cytoscape.js-d3-force",
+  "homepage": "https://github.com/shichuanpo/cytoscape.js-d3-force",
   "devDependencies": {
     "babel-core": "^6.24.1",
     "babel-loader": "^7.0.0",
@@ -58,5 +55,8 @@
   },
   "dependencies": {
     "d3-force": "^2.0.1"
+  },
+  "directories": {
+    "test": "test"
   }
 }

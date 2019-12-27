@@ -121,5 +121,5 @@ This project is set up to automatically be published to npm and bower.  To publi
 1. Bump the version number and tag: `npm version major|minor|patch`
 1. Push to origin: `git push && git push --tags`
 1. Publish to npm: `npm publish .`
-1. If publishing to bower for the first time, you'll need to run `bower register cytoscape-d3-force https://github.com//cytoscape.js-d3-force.git`
-1. [Make a new release](https://github.com//cytoscape.js-d3-force/releases/new) for Zenodo.
+1. If publishing to bower for the first time, you'll need to run `bower register cytoscape-d3-force https://github.com/shichuanpo/cytoscape.js-d3-force.git`
+1. [Make a new release](https://github.com/shichuanpo/cytoscape.js-d3-force/releases/new) for Zenodo.
