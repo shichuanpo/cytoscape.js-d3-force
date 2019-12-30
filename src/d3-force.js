@@ -51,8 +51,12 @@ class ContinuousLayout {
       x: p.x,
       y: p.y
     } );
-  
-    scratch.locked = node.locked();
+    if (node.locked()) {
+      assign( scratch, {
+        fx: p.x,
+        fy: p.y
+      } );
+    }
   }
   
   refreshPositions ( nodes, state, fit ){
