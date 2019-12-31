@@ -1,6 +1,6 @@
 {
   "name": "cytoscape-d3-force",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "d3-force for cytoscape.js",
   "main": "cytoscape-d3-force.js",
   "author": "yangdf <yangdongfeng8@126.com>",
@@ -51,10 +51,8 @@
     "worker-loader": "^2.0.0"
   },
   "peerDependencies": {
+    "d3-force": "^2.0.1",
     "cytoscape": "^3.2.0"
-  },
-  "dependencies": {
-    "d3-force": "^2.0.1"
   },
   "directories": {
     "test": "test"
