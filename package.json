@@ -1,9 +1,9 @@
 {
   "name": "cytoscape-d3-force",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "d3-force for cytoscape.js",
   "main": "cytoscape-d3-force.js",
-  "author": "yangdf <yangdongfeng8@126.com>",
+  "author": "shichuanpo <yangdongfeng8@126.com>",
   "scripts": {
     "postpublish": "run-s gh-pages:demo gh-pages:deploy gh-pages:clean",
     "gh-pages:demo": "cpy demo.html . --rename=index.html",

@@ -111,7 +111,6 @@ class ContinuousLayout {
     _progress = _progress > 1 ? 1 : _progress;
     if (_progress >= 1 && !s.infinite) {
       this.end();
-      this.simulation.stop();
       return;
     }
     s.tick && s.tick(_progress);
@@ -123,17 +122,22 @@ class ContinuousLayout {
   end () {
     const s = this.state;
     this.refreshPositions( s.nodes, s, s.fit );
-    !s.infinite && this.removeCytoscapeEvents && this.removeCytoscapeEvents();
-    s.animate && this.regrabify( s.nodes );
     this.emit('layoutstop', s.cy);
+    this.reset();
   }
 
   updateGrabState (node) {
     this.getScratch( node ).grabbed = node.grabbed();
   }
-
+  reset(destroyed){
+    this.simulation && this.simulation.stop();
+    const s = this.state;
+    (destroyed || !s.infinite) && this.removeCytoscapeEvents && this.removeCytoscapeEvents();
+    s.animate && this.regrabify( s.nodes );
+    return this;
+  }
   run(){
-    this.destroy();
+    this.reset();
     let l = this;
     let s = this.state;
     let ready = false;
@@ -256,13 +260,7 @@ class ContinuousLayout {
   postrun(){}
 
   stop(){
-    this.destroy();
-    return this;
-  }
-
-  destroy(){
-    this.removeCytoscapeEvents && this.removeCytoscapeEvents();
-    return this;
+    return this.reset(true);
   }
 }
 
