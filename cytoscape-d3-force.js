@@ -155,8 +155,12 @@ var ContinuousLayout = function () {
         x: p.x,
         y: p.y
       });
-
-      scratch.locked = node.locked();
+      if (node.locked()) {
+        assign(scratch, {
+          fx: p.x,
+          fy: p.y
+        });
+      }
     }
   }, {
     key: 'refreshPositions',
@@ -224,7 +228,6 @@ var ContinuousLayout = function () {
       _progress = _progress > 1 ? 1 : _progress;
       if (_progress >= 1 && !s.infinite) {
         this.end();
-        this.simulation.stop();
         return;
       }
       s.tick && s.tick(_progress);
@@ -237,9 +240,8 @@ var ContinuousLayout = function () {
     value: function end() {
       var s = this.state;
       this.refreshPositions(s.nodes, s, s.fit);
-      !s.infinite && this.removeCytoscapeEvents && this.removeCytoscapeEvents();
-      s.animate && this.regrabify(s.nodes);
       this.emit('layoutstop', s.cy);
+      this.reset();
     }
   }, {
     key: 'updateGrabState',
@@ -247,11 +249,20 @@ var ContinuousLayout = function () {
       this.getScratch(node).grabbed = node.grabbed();
     }
   }, {
+    key: 'reset',
+    value: function reset(destroyed) {
+      this.simulation && this.simulation.stop();
+      var s = this.state;
+      (destroyed || !s.infinite) && this.removeCytoscapeEvents && this.removeCytoscapeEvents();
+      s.animate && this.regrabify(s.nodes);
+      return this;
+    }
+  }, {
     key: 'run',
     value: function run() {
       var _this3 = this;
 
-      this.destroy();
+      this.reset();
       var l = this;
       var s = this.state;
       var ready = false;
@@ -382,14 +393,7 @@ var ContinuousLayout = function () {
   }, {
     key: 'stop',
     value: function stop() {
-      this.destroy();
-      return this;
-    }
-  }, {
-    key: 'destroy',
-    value: function destroy() {
-      this.removeCytoscapeEvents && this.removeCytoscapeEvents();
-      return this;
+      return this.reset(true);
     }
   }]);
 
