@@ -244,11 +244,6 @@ var ContinuousLayout = function () {
       this.reset();
     }
   }, {
-    key: 'updateGrabState',
-    value: function updateGrabState(node) {
-      this.getScratch(node).grabbed = node.grabbed();
-    }
-  }, {
     key: 'reset',
     value: function reset(destroyed) {
       this.simulation && this.simulation.stop();
@@ -350,27 +345,16 @@ var ContinuousLayout = function () {
             s.progress = 0;
             s.iterations = 0;
             s.startTime = Date.now();
-            switch (e.type) {
-              case 'grab':
-                l.updateGrabState(node);
-                l.simulation.alphaTarget(0.3).restart();
-                _scratch.x = pos.x;
-                _scratch.y = pos.y;
-                break;
-              case 'free':
-              case 'unlock':
-                l.updateGrabState(node);
-                delete _scratch.fx;
-                delete _scratch.fy;
-                _scratch.x = pos.x;
-                _scratch.y = pos.y;
-                l.simulation.alphaTarget(0).alpha(0.3).restart();
-                break;
-              case 'drag':
-              case 'lock':
-                _scratch.fx = pos.x;
-                _scratch.fy = pos.y;
-                break;
+            _scratch.x = pos.x;
+            _scratch.y = pos.y;
+            _scratch.fx = pos.x;
+            _scratch.fy = pos.y;
+            console.log('e.type = ', e.type, e);
+            if (e.type === 'grab') {
+              l.simulation.alphaTarget(0.3).restart();
+            } else if ((e.type === 'unlock' || e.type === 'free') && !s.fixedAfterDragging) {
+              delete _scratch.fx;
+              delete _scratch.fy;
             }
           };
           l.removeCytoscapeEvents = function () {
@@ -437,6 +421,7 @@ module.exports = Object.freeze({
   maxIterations: 0, // max iterations before the layout will bail out
   maxSimulationTime: 0, // max length in ms to run the layout
   ungrabifyWhileSimulating: false, // so you can't drag nodes during layout
+  fixedAfterDragging: false, // fixed node after dragging
   fit: false, // on every layout reposition of nodes, fit the viewport
   padding: 30, // padding around the simulation
   boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }

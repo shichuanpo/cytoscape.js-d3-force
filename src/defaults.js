@@ -3,6 +3,7 @@ module.exports = Object.freeze({
   maxIterations: 0, // max iterations before the layout will bail out
   maxSimulationTime: 0, // max length in ms to run the layout
   ungrabifyWhileSimulating: false, // so you can't drag nodes during layout
+  fixedAfterDragging: false, // fixed node after dragging
   fit: false, // on every layout reposition of nodes, fit the viewport
   padding: 30, // padding around the simulation
   boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
