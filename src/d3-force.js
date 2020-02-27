@@ -109,9 +109,8 @@ class ContinuousLayout {
     let _timeIterations = s.maxSimulationTime && !s.infinite ? _timeRunning / s.maxSimulationTime : 0;
     let _progress = Math.max(_iterations, _timeIterations, s.progress);
     _progress = _progress > 1 ? 1 : _progress;
-    if (_progress >= 1 && !s.infinite) {
-      this.end();
-      this.simulation.stop();
+    if (_progress >= 1) {
+      this.end(!s.infinite);
       return;
     }
     s.tick && s.tick(_progress);
@@ -120,27 +119,29 @@ class ContinuousLayout {
     }
   }
 
-  end () {
+  end (destroyed) {
     const s = this.state;
     this.refreshPositions( s.nodes, s, s.fit );
-    !s.infinite && this.removeCytoscapeEvents && this.removeCytoscapeEvents();
-    s.animate && this.regrabify( s.nodes );
     this.emit('layoutstop', s.cy);
+    s.cy.off('destroy', this.stop);
+    this.reset(destroyed);
   }
 
-  updateGrabState (node) {
-    this.getScratch( node ).grabbed = node.grabbed();
+  reset(destroyed){
+    this.simulation && this.simulation.stop();
+    const s = this.state;
+    (destroyed || !s.infinite) && this.removeCytoscapeEvents && this.removeCytoscapeEvents();
+    s.animate && this.regrabify( s.nodes );
+    return this;
   }
-
   run(){
-    this.destroy();
+    this.reset();
     let l = this;
     let s = this.state;
     let ready = false;
     s.currentBoundingBox = this.makeBoundingBox( s.boundingBox, s.cy );
     if( s.ready ){ l.one( 'layoutready', s.ready ); }
     if( s.stop ){ l.one( 'layoutstop', s.stop ); }
-    
     s.nodes.forEach( n => this.setInitialPositionState( n, s ) );
     if (!ready) {
       ready = true;
@@ -201,12 +202,15 @@ class ContinuousLayout {
           l.end();
         });
     }
+    s.cy.one('destroy', l.stop);
     l.prerun( s );
     l.emit('layoutstart');
     s.progress = 0;
     s.iterations = 0;
     s.startTime = Date.now();
+
     if( s.animate ){
+      let restartAlphaTarget = Math.abs((s.alpha || 1) - (s.alphaTarget || 0)) / 3;
       if (!l.removeCytoscapeEvents) {
         let _cytoscapeEvent = function(e){
           let node = this;
@@ -217,27 +221,22 @@ class ContinuousLayout {
           s.progress = 0;
           s.iterations = 0;
           s.startTime = Date.now();
-          switch( e.type ){
-            case 'grab':
-              l.updateGrabState( node );
-              l.simulation.alphaTarget(0.3).restart();
-              _scratch.x = pos.x;
-              _scratch.y = pos.y;
-              break;
-            case 'free':
-            case 'unlock':
-              l.updateGrabState( node );
+          _scratch.x = pos.x;
+          _scratch.y = pos.y;
+          if (e.type === 'grab') {
+            l.simulation.alphaTarget(restartAlphaTarget).restart();
+          } else if ((e.type === 'unlock' || e.type === 'free')) {
+            if (!s.fixedAfterDragging) {
               delete _scratch.fx;
               delete _scratch.fy;
-              _scratch.x = pos.x;
-              _scratch.y = pos.y;
-              l.simulation.alphaTarget(0).alpha(0.3).restart();
-              break;
-            case 'drag':
-            case 'lock':
+            } else {
               _scratch.fx = pos.x;
               _scratch.fy = pos.y;
-            break;
+            }
+            l.simulation.alphaTarget(restartAlphaTarget).restart();
+          } else {
+            _scratch.fx = pos.x;
+            _scratch.fy = pos.y;
           }
         };
         l.removeCytoscapeEvents = function () {
@@ -256,13 +255,7 @@ class ContinuousLayout {
   postrun(){}
 
   stop(){
-    this.destroy();
-    return this;
-  }
-
-  destroy(){
-    this.removeCytoscapeEvents && this.removeCytoscapeEvents();
-    return this;
+    return this.reset(true);
   }
 }
 

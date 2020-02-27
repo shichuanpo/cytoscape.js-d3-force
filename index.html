@@ -153,6 +153,7 @@ function createChildren(id, num) {
 					layout: {
 						name: 'd3-force',
             animate: true,
+            fixedAfterDragging: false,
             linkId: function id(d) {
               return d.id;
             },
@@ -163,7 +164,7 @@ function createChildren(id, num) {
             tick: function(progress) {
               console.log('progress - ', progress);
             },
-            randomize: true,
+            randomize: false,
             infinite: true
 						// some more options here...
 					},

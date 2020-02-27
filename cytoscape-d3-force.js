@@ -155,8 +155,12 @@ var ContinuousLayout = function () {
         x: p.x,
         y: p.y
       });
-
-      scratch.locked = node.locked();
+      if (node.locked()) {
+        assign(scratch, {
+          fx: p.x,
+          fy: p.y
+        });
+      }
     }
   }, {
     key: 'refreshPositions',
@@ -222,9 +226,8 @@ var ContinuousLayout = function () {
       var _timeIterations = s.maxSimulationTime && !s.infinite ? _timeRunning / s.maxSimulationTime : 0;
       var _progress = Math.max(_iterations, _timeIterations, s.progress);
       _progress = _progress > 1 ? 1 : _progress;
-      if (_progress >= 1 && !s.infinite) {
-        this.end();
-        this.simulation.stop();
+      if (_progress >= 1) {
+        this.end(!s.infinite);
         return;
       }
       s.tick && s.tick(_progress);
@@ -234,24 +237,28 @@ var ContinuousLayout = function () {
     }
   }, {
     key: 'end',
-    value: function end() {
+    value: function end(destroyed) {
       var s = this.state;
       this.refreshPositions(s.nodes, s, s.fit);
-      !s.infinite && this.removeCytoscapeEvents && this.removeCytoscapeEvents();
-      s.animate && this.regrabify(s.nodes);
       this.emit('layoutstop', s.cy);
+      s.cy.off('destroy', this.stop);
+      this.reset(destroyed);
     }
   }, {
-    key: 'updateGrabState',
-    value: function updateGrabState(node) {
-      this.getScratch(node).grabbed = node.grabbed();
+    key: 'reset',
+    value: function reset(destroyed) {
+      this.simulation && this.simulation.stop();
+      var s = this.state;
+      (destroyed || !s.infinite) && this.removeCytoscapeEvents && this.removeCytoscapeEvents();
+      s.animate && this.regrabify(s.nodes);
+      return this;
     }
   }, {
     key: 'run',
     value: function run() {
       var _this3 = this;
 
-      this.destroy();
+      this.reset();
       var l = this;
       var s = this.state;
       var ready = false;
@@ -262,7 +269,6 @@ var ContinuousLayout = function () {
       if (s.stop) {
         l.one('layoutstop', s.stop);
       }
-
       s.nodes.forEach(function (n) {
         return _this3.setInitialPositionState(n, s);
       });
@@ -321,12 +327,15 @@ var ContinuousLayout = function () {
           l.end();
         });
       }
+      s.cy.one('destroy', l.stop);
       l.prerun(s);
       l.emit('layoutstart');
       s.progress = 0;
       s.iterations = 0;
       s.startTime = Date.now();
+
       if (s.animate) {
+        var restartAlphaTarget = Math.abs((s.alpha || 1) - (s.alphaTarget || 0)) / 3;
         if (!l.removeCytoscapeEvents) {
           var _cytoscapeEvent = function _cytoscapeEvent(e) {
             var node = this;
@@ -339,27 +348,22 @@ var ContinuousLayout = function () {
             s.progress = 0;
             s.iterations = 0;
             s.startTime = Date.now();
-            switch (e.type) {
-              case 'grab':
-                l.updateGrabState(node);
-                l.simulation.alphaTarget(0.3).restart();
-                _scratch.x = pos.x;
-                _scratch.y = pos.y;
-                break;
-              case 'free':
-              case 'unlock':
-                l.updateGrabState(node);
+            _scratch.x = pos.x;
+            _scratch.y = pos.y;
+            if (e.type === 'grab') {
+              l.simulation.alphaTarget(restartAlphaTarget).restart();
+            } else if (e.type === 'unlock' || e.type === 'free') {
+              if (!s.fixedAfterDragging) {
                 delete _scratch.fx;
                 delete _scratch.fy;
-                _scratch.x = pos.x;
-                _scratch.y = pos.y;
-                l.simulation.alphaTarget(0).alpha(0.3).restart();
-                break;
-              case 'drag':
-              case 'lock':
+              } else {
                 _scratch.fx = pos.x;
                 _scratch.fy = pos.y;
-                break;
+              }
+              l.simulation.alphaTarget(restartAlphaTarget).restart();
+            } else {
+              _scratch.fx = pos.x;
+              _scratch.fy = pos.y;
             }
           };
           l.removeCytoscapeEvents = function () {
@@ -382,14 +386,7 @@ var ContinuousLayout = function () {
   }, {
     key: 'stop',
     value: function stop() {
-      this.destroy();
-      return this;
-    }
-  }, {
-    key: 'destroy',
-    value: function destroy() {
-      this.removeCytoscapeEvents && this.removeCytoscapeEvents();
-      return this;
+      return this.reset(true);
     }
   }]);
 
@@ -433,6 +430,7 @@ module.exports = Object.freeze({
   maxIterations: 0, // max iterations before the layout will bail out
   maxSimulationTime: 0, // max length in ms to run the layout
   ungrabifyWhileSimulating: false, // so you can't drag nodes during layout
+  fixedAfterDragging: false, // fixed node after dragging
   fit: false, // on every layout reposition of nodes, fit the viewport
   padding: 30, // padding around the simulation
   boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
