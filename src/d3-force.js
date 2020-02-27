@@ -19,6 +19,7 @@ class ContinuousLayout {
     } );
     this.simulation = null;
     this.removeCytoscapeEvents = null;
+    this.destroyedEvent = null;
   }
   makeBoundingBox ( bb, cy ){
     if( bb == null ){
@@ -123,13 +124,13 @@ class ContinuousLayout {
     const s = this.state;
     this.refreshPositions( s.nodes, s, s.fit );
     this.emit('layoutstop', s.cy);
-    s.cy.off('destroy', this.stop);
     this.reset(destroyed);
   }
 
   reset(destroyed){
     this.simulation && this.simulation.stop();
     const s = this.state;
+    this.destroyedEvent && this.destroyedEvent();
     (destroyed || !s.infinite) && this.removeCytoscapeEvents && this.removeCytoscapeEvents();
     s.animate && this.regrabify( s.nodes );
     return this;
@@ -202,7 +203,16 @@ class ContinuousLayout {
           l.end();
         });
     }
-    s.cy.one('destroy', l.stop);
+    if (!l.destroyedEvent) {
+      let destroyHandler;
+      s.cy.one('destroy', destroyHandler = function(){
+        l.stop();
+      });
+      l.destroyedEvent = function () {
+        s.cy.off('destroy', destroyHandler);
+        l.destroyedEvent = null;
+      };
+    }
     l.prerun( s );
     l.emit('layoutstart');
     s.progress = 0;

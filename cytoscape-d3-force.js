@@ -110,6 +110,7 @@ var ContinuousLayout = function () {
     });
     this.simulation = null;
     this.removeCytoscapeEvents = null;
+    this.destroyedEvent = null;
   }
 
   _createClass(ContinuousLayout, [{
@@ -241,7 +242,6 @@ var ContinuousLayout = function () {
       var s = this.state;
       this.refreshPositions(s.nodes, s, s.fit);
       this.emit('layoutstop', s.cy);
-      s.cy.off('destroy', this.stop);
       this.reset(destroyed);
     }
   }, {
@@ -249,6 +249,7 @@ var ContinuousLayout = function () {
     value: function reset(destroyed) {
       this.simulation && this.simulation.stop();
       var s = this.state;
+      this.destroyedEvent && this.destroyedEvent();
       (destroyed || !s.infinite) && this.removeCytoscapeEvents && this.removeCytoscapeEvents();
       s.animate && this.regrabify(s.nodes);
       return this;
@@ -327,7 +328,16 @@ var ContinuousLayout = function () {
           l.end();
         });
       }
-      s.cy.one('destroy', l.stop);
+      if (!l.destroyedEvent) {
+        var destroyHandler = void 0;
+        s.cy.one('destroy', destroyHandler = function destroyHandler() {
+          l.stop();
+        });
+        l.destroyedEvent = function () {
+          s.cy.off('destroy', destroyHandler);
+          l.destroyedEvent = null;
+        };
+      }
       l.prerun(s);
       l.emit('layoutstart');
       s.progress = 0;
