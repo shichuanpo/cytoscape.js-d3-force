@@ -109,8 +109,8 @@ class ContinuousLayout {
     let _timeIterations = s.maxSimulationTime && !s.infinite ? _timeRunning / s.maxSimulationTime : 0;
     let _progress = Math.max(_iterations, _timeIterations, s.progress);
     _progress = _progress > 1 ? 1 : _progress;
-    if (_progress >= 1 && !s.infinite) {
-      this.end();
+    if (_progress >= 1) {
+      this.end(!s.infinite);
       return;
     }
     s.tick && s.tick(_progress);
@@ -119,11 +119,12 @@ class ContinuousLayout {
     }
   }
 
-  end () {
+  end (destroyed) {
     const s = this.state;
     this.refreshPositions( s.nodes, s, s.fit );
     this.emit('layoutstop', s.cy);
-    this.reset();
+    s.cy.off('destroy', this.stop);
+    this.reset(destroyed);
   }
 
   reset(destroyed){
@@ -141,7 +142,6 @@ class ContinuousLayout {
     s.currentBoundingBox = this.makeBoundingBox( s.boundingBox, s.cy );
     if( s.ready ){ l.one( 'layoutready', s.ready ); }
     if( s.stop ){ l.one( 'layoutstop', s.stop ); }
-    
     s.nodes.forEach( n => this.setInitialPositionState( n, s ) );
     if (!ready) {
       ready = true;
@@ -202,12 +202,15 @@ class ContinuousLayout {
           l.end();
         });
     }
+    s.cy.one('destroy', l.stop);
     l.prerun( s );
     l.emit('layoutstart');
     s.progress = 0;
     s.iterations = 0;
     s.startTime = Date.now();
+
     if( s.animate ){
+      let restartAlphaTarget = Math.abs((s.alpha || 1) - (s.alphaTarget || 0)) / 3;
       if (!l.removeCytoscapeEvents) {
         let _cytoscapeEvent = function(e){
           let node = this;
@@ -220,14 +223,20 @@ class ContinuousLayout {
           s.startTime = Date.now();
           _scratch.x = pos.x;
           _scratch.y = pos.y;
-          _scratch.fx = pos.x;
-          _scratch.fy = pos.y;
-          console.log('e.type = ', e.type, e);
           if (e.type === 'grab') {
-            l.simulation.alphaTarget(0.3).restart();
-          } else if ((e.type === 'unlock' || e.type === 'free') && !s.fixedAfterDragging) {
-            delete _scratch.fx;
-            delete _scratch.fy;
+            l.simulation.alphaTarget(restartAlphaTarget).restart();
+          } else if ((e.type === 'unlock' || e.type === 'free')) {
+            if (!s.fixedAfterDragging) {
+              delete _scratch.fx;
+              delete _scratch.fy;
+            } else {
+              _scratch.fx = pos.x;
+              _scratch.fy = pos.y;
+            }
+            l.simulation.alphaTarget(restartAlphaTarget).restart();
+          } else {
+            _scratch.fx = pos.x;
+            _scratch.fy = pos.y;
           }
         };
         l.removeCytoscapeEvents = function () {
