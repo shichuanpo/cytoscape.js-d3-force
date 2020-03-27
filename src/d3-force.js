@@ -15,7 +15,8 @@ class ContinuousLayout {
       edges: o.eles.edges(),
       progress: 0,
       iterations: 0,
-      startTime: 0
+      startTime: 0,
+      centered: false
     } );
     this.simulation = null;
     this.removeCytoscapeEvents = null;
@@ -114,6 +115,8 @@ class ContinuousLayout {
       this.end(!s.infinite);
       return;
     }
+    s.center && !s.centered && s.cy.center();
+    s.centered = true;
     s.tick && s.tick(_progress);
     if (s.animate) {
       this.refreshPositions( s.nodes, s, s.fit );
@@ -186,14 +189,17 @@ class ContinuousLayout {
         s.radialX && _radius.x(s.radialX);
         s.radialY && _radius.y(s.radialY);
       }
-      let _center = d3.forceCenter(s.currentBoundingBox.w / 2, s.currentBoundingBox.h / 2);
+      // let _center = null;
+      // if (s.center) {
+      //   _center = d3.forceCenter(s.center);
+      // }
       l.simulation
         .force('collide', _collide)
         .force('link', _link)
         .force('many-body', _manyBody)
         .force('x', _x)
-        .force('y', _y)
-        .force("center", _center);
+        .force('y', _y);
+      // _center && l.simulation.force("center", _center);
       _radius && l.simulation.force('radius', _radius);
       l.simulation
         .on("tick", () => {
