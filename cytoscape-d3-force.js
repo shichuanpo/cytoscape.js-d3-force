@@ -106,7 +106,8 @@ var ContinuousLayout = function () {
       edges: o.eles.edges(),
       progress: 0,
       iterations: 0,
-      startTime: 0
+      startTime: 0,
+      centered: false
     });
     this.simulation = null;
     this.removeCytoscapeEvents = null;
@@ -231,6 +232,8 @@ var ContinuousLayout = function () {
         this.end(!s.infinite);
         return;
       }
+      s.center && !s.centered && s.cy.center();
+      s.centered = true;
       s.tick && s.tick(_progress);
       if (s.animate) {
         this.refreshPositions(s.nodes, s, s.fit);
@@ -319,8 +322,12 @@ var ContinuousLayout = function () {
           s.radialX && _radius.x(s.radialX);
           s.radialY && _radius.y(s.radialY);
         }
-        var _center = d3.forceCenter(s.currentBoundingBox.w / 2, s.currentBoundingBox.h / 2);
-        l.simulation.force('collide', _collide).force('link', _link).force('many-body', _manyBody).force('x', _x).force('y', _y).force("center", _center);
+        // let _center = null;
+        // if (s.center) {
+        //   _center = d3.forceCenter(s.center);
+        // }
+        l.simulation.force('collide', _collide).force('link', _link).force('many-body', _manyBody).force('x', _x).force('y', _y);
+        // _center && l.simulation.force("center", _center);
         _radius && l.simulation.force('radius', _radius);
         l.simulation.on("tick", function () {
           l.tick();
@@ -441,6 +448,7 @@ module.exports = Object.freeze({
   maxSimulationTime: 0, // max length in ms to run the layout
   ungrabifyWhileSimulating: false, // so you can't drag nodes during layout
   fixedAfterDragging: false, // fixed node after dragging
+  center: true, // on first layout reposition of nodes, center the viewport
   fit: false, // on every layout reposition of nodes, fit the viewport
   padding: 30, // padding around the simulation
   boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
